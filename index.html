@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Gift</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+        .form-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">Free Gift: 647245</div>
+    
+    <div class="form-container">
+        <label for="codeInput">코드를 입력하세요:</label><br><br>
+        <input type="text" id="codeInput" placeholder="코드 입력">
+        <button onclick="checkCode()">확인</button>
+    </div>
+    
+    <div id="resultMessage" class="hidden">
+        <h1>축하합니다!</h1>
+        <p>한민주씨이군요!</p>
+        <p>이걸봤다면 카카오톡에<br><strong>gift_12@</strong>라고 보내세요!</p>
+    </div>
+    
+    <script>
+        function checkCode() {
+            const input = document.getElementById('codeInput').value;
+            const validCode = "freegift_code_10_#@";
+            
+            if (input === validCode) {
+                document.querySelector('.form-container').classList.add('hidden');
+                document.getElementById('resultMessage').classList.remove('hidden');
+            } else {
+                alert("코드가 잘못되었습니다. 다시 시도해주세요.");
+            }
+        }
+    </script>
+</body>
+</html>
