@@ -42,17 +42,15 @@
         .chat-header {
             background: linear-gradient(135deg, #6e45e2, #88d3ce);
             padding: 15px;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             color: white;
             font-size: 20px;
             font-weight: bold;
-            position: relative;
         }
 
-        .donate-button {
-            position: absolute;
-            right: 10px;
-            top: 10px;
+        .other-button, .donate-button {
             background: linear-gradient(135deg, #ff7e5f, #feb47b);
             color: white;
             border: none;
@@ -63,7 +61,7 @@
             font-size: 14px;
         }
 
-        .donate-button:hover {
+        .other-button:hover, .donate-button:hover {
             opacity: 0.8;
         }
 
@@ -139,11 +137,6 @@
             background: rgba(255, 255, 255, 0.1);
             color: white;
             outline: none;
-            cursor: pointer;
-        }
-
-        .chat-input input:focus {
-            outline: none;
         }
 
         .chat-input button {
@@ -155,6 +148,11 @@
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
+        }
+
+        .chat-input button:disabled {
+            background: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
         }
 
         .popup {
@@ -179,8 +177,19 @@
             margin-bottom: 20px;
         }
 
-        .popup button {
+        .popup button, .popup select {
             width: 100%;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .popup select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(0, 0, 0, 0.3);
+        }
+
+        .popup button {
             background: linear-gradient(135deg, #6e45e2, #88d3ce);
             color: white;
             border: none;
@@ -188,17 +197,22 @@
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
-            margin-bottom: 15px;
         }
 
         .popup button:hover {
             opacity: 0.8;
+        }
+
+        .popup .alert {
+            color: red;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
         <div class="chat-header">
+            <button class="other-button" onclick="openOtherPopup()">기타</button>
             Ayang Bot α
             <button class="donate-button" onclick="openDonatePopup()">기부</button>
         </div>
@@ -207,6 +221,15 @@
             <input type="text" id="user-input" placeholder="메시지를 입력하세요..." readonly onclick="openMessagePopup()">
             <button id="send-button" disabled onclick="sendMessage()">전송</button>
         </div>
+    </div>
+
+    <!-- 기타 팝업 -->
+    <div class="popup" id="other-popup">
+        <h3>기타 메뉴</h3>
+        <button onclick="openUpgradePopup()">아양봇 업그레이드</button>
+        <button onclick="checkCustomBot()">나만의 아양봇 만들기</button>
+        <button onclick="openCodePopup()">코드 입력</button>
+        <button onclick="closeOtherPopup()">닫기</button>
     </div>
 
     <!-- 메시지 선택 팝업 -->
@@ -224,23 +247,49 @@
         <form action="https://www.paypal.com/donate" method="post" target="_blank">
             <input type="hidden" name="business" value="your-paypal-email@example.com">
             <input type="hidden" name="currency_code" value="KRW">
-            <select name="amount">
+            <select name="amount" style="font-size: 20px; padding: 10px;">
                 <option value="1000">1,000원</option>
                 <option value="2000">2,000원</option>
                 <option value="5000">5,000원</option>
                 <option value="10000">10,000원</option>
             </select>
-            <div class="button-container">
-                <button type="submit">기부하기</button>
-                <button type="button" onclick="closeDonatePopup()">닫기</button>
-            </div>
+            <button type="submit">기부하기</button>
+            <button type="button" onclick="closeDonatePopup()">닫기</button>
         </form>
     </div>
 
+    <!-- 업그레이드 팝업 -->
+    <div class="popup" id="upgrade-popup">
+        <h3>아양봇 업그레이드</h3>
+        <button onclick="upgradeBot('premium')">아양봇 프리미엄 (1,000원)</button>
+        <button onclick="upgradeBot('premium-plus')">아양봇 프리미엄 플러스 (5,000원)</button>
+        <button onclick="upgradeBot('ultra-premium')">아양봇 울트라 프리미엄 (10,000원)</button>
+        <button onclick="closeUpgradePopup()">닫기</button>
+    </div>
+
+    <!-- 코드 입력 팝업 -->
+    <div class="popup" id="code-popup">
+        <h3>코드를 입력하세요</h3>
+        <input type="text" id="code-input" placeholder="코드를 입력하세요" style="width: 100%; padding: 10px; margin-bottom: 15px;">
+        <button onclick="submitCode()">확인</button>
+        <button onclick="closeCodePopup()">닫기</button>
+    </div>
+
     <script>
+        let botLevel = ""; // 현재 아양봇의 업그레이드 상태
+
         const chatBox = document.getElementById('chat-box');
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
+
+        // 팝업 열기/닫기 함수
+        function openOtherPopup() {
+            document.getElementById('other-popup').classList.add('active');
+        }
+
+        function closeOtherPopup() {
+            document.getElementById('other-popup').classList.remove('active');
+        }
 
         function openMessagePopup() {
             document.getElementById('message-popup').classList.add('active');
@@ -250,6 +299,33 @@
             document.getElementById('message-popup').classList.remove('active');
         }
 
+        function openDonatePopup() {
+            document.getElementById('donate-popup').classList.add('active');
+        }
+
+        function closeDonatePopup() {
+            document.getElementById('donate-popup').classList.remove('active');
+        }
+
+        function openUpgradePopup() {
+            closeOtherPopup();
+            document.getElementById('upgrade-popup').classList.add('active');
+        }
+
+        function closeUpgradePopup() {
+            document.getElementById('upgrade-popup').classList.remove('active');
+        }
+
+        function openCodePopup() {
+            closeOtherPopup();
+            document.getElementById('code-popup').classList.add('active');
+        }
+
+        function closeCodePopup() {
+            document.getElementById('code-popup').classList.remove('active');
+        }
+
+        // 메시지 선택 및 전송
         function selectMessage(message) {
             userInput.value = message;
             sendButton.disabled = false;
@@ -262,8 +338,7 @@
 
             addMessage(message, 'user');
             userInput.value = '';
-            sendButton.disabled = true;
-
+            sendButton.disabled = true; // 전송 버튼 비활성화
             botTypingEffect(message);
         }
 
@@ -287,6 +362,7 @@
             setTimeout(() => {
                 typingDots.remove();
                 typeMessage(botResponse, 'bot');
+                sendButton.disabled = false; // 전송 버튼 활성화
             }, 1500);
         }
 
@@ -307,18 +383,46 @@
         }
 
         function getBotResponse(userMessage) {
-            if (userMessage.includes('안녕')) return '안녕하세요! 만나서 반가워요!제 이름은 아양봇 알파에요.아직은 미숙하지만 잘 부탁드려요.';
-            if (userMessage.includes('기분')) return '그 말을 들으니 기분이 더 좋아졌네요';
+            if (userMessage.includes('안녕')) return '안녕하세요! 만나서 반가워요!';
+            if (userMessage.includes('기분')) return '오늘은 기분이 너무 좋아요! 당신은 어때요?';
             if (userMessage.includes('날씨')) return '오늘 날씨는 맑고 바람이 시원하네요!';
             return '제가 아직 배우고 있는 부분이에요. 더 알려주세요!';
         }
 
-        function openDonatePopup() {
-            document.getElementById('donate-popup').classList.add('active');
+        // 업그레이드 선택
+        function upgradeBot(level) {
+            if (level === 'premium') {
+                botLevel = 'premium';
+                alert('아양봇 프리미엄으로 업그레이드되었습니다! (1,000원)');
+            } else if (level === 'premium-plus') {
+                botLevel = 'premium-plus';
+                alert('아양봇 프리미엄 플러스로 업그레이드되었습니다! (5,000원)');
+            } else if (level === 'ultra-premium') {
+                botLevel = 'ultra-premium';
+                alert('아양봇 울트라 프리미엄으로 업그레이드되었습니다! (10,000원)');
+            }
+            closeUpgradePopup();
         }
 
-        function closeDonatePopup() {
-            document.getElementById('donate-popup').classList.remove('active');
+        // 나만의 아양봇 만들기
+        function checkCustomBot() {
+            if (botLevel === 'premium-plus' || botLevel === 'ultra-premium') {
+                alert('제작중...');
+            } else {
+                alert('아양봇 프리미엄 플러스 이상으로 업그레이드 하세요.');
+            }
+        }
+
+        // 코드 입력
+        function submitCode() {
+            const codeInput = document.getElementById('code-input').value.trim();
+            if (codeInput === 'ayang bot hacker') {
+                botLevel = 'ultra-premium';
+                alert('축하합니다! 아양봇 울트라 프리미엄으로 무료 업그레이드되었습니다!');
+                closeCodePopup();
+            } else {
+                alert('유효하지 않은 코드입니다.');
+            }
         }
     </script>
 </body>
